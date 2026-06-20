@@ -64,14 +64,18 @@ executable Interpreter-book-take3
     -- Modules included in this executable, other than Main.
     other-modules:  Token,
                     CombinatorBase,
-                    Scanner
+                    Scanner,
+                    Parser
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.18.3.0,
-                      haskeline
+    build-depends:    base ^>=4.18.3.0
+                    , haskeline 
+                    , time
+                    , containers
+                    , unordered-containers
             
 
     -- Directories containing source files.

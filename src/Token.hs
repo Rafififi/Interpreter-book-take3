@@ -1,4 +1,4 @@
-module Token(TokenType(..), TokenInfo(..)) where
+module Token(TokenType(..), TokenInfo(..), printTokens) where
 
 data TokenType = 
     LEFTPAREN
@@ -40,6 +40,7 @@ data TokenType =
   | IDENTIFIER String
   | STRING String 
   | NUMBER Double
+  | UNEXPECTED Char
   deriving (Eq, Ord)
 
 instance Show TokenType where
@@ -83,6 +84,7 @@ instance Show TokenType where
   show (IDENTIFIER x) = x
   show (STRING x) = x 
   show (NUMBER x) = show x
+  show (UNEXPECTED x) = "ERROR: found unxpected value: " <> show x
 
 
 data TokenInfo = TokenInfo
@@ -90,3 +92,7 @@ data TokenInfo = TokenInfo
   , row :: Int
   , token :: TokenType
   } deriving (Show, Eq)
+
+printTokens :: Bool -> TokenInfo -> IO Bool
+printTokens _ (TokenInfo row col (UNEXPECTED x)) = print ("found unexpected token " <> show x <> " line " <> show row <> " col: " <> show col) >> return True
+printTokens res token = print token  >> return res

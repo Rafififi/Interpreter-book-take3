@@ -4,7 +4,9 @@ import System.Console.Haskeline (InputT, runInputT, defaultSettings, getInputLin
 import System.Environment (getArgs)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import CombinatorBase (GenParser(runParser))
+import Token(printTokens)
 import Scanner(tokens)
+import Control.Monad (foldM)
 
 type Repl a = InputT IO a
 
@@ -32,10 +34,11 @@ runFile file = readFile file >>= run >>= hadError
     hadError True  = exitWith (ExitFailure 65)
     hadError False = return ()
 
+
 run :: String -> IO Bool
 run source = case runParser tokens source (0,1) of
                 Left err  -> print err >> return True
-                Right res -> print res >> return False
+                Right (_, (toks, _)) -> foldM printTokens False toks 
 
 
 main :: IO ()

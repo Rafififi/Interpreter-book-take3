@@ -96,9 +96,18 @@ whiteSpace :: Parser String
 whiteSpace =  consumeSome (==' ')
 
 tokens :: Parser [TokenInfo]
-tokens = many (discard *> wrapPosition tokenP) <* discard
+tokens = many (discard *> wrapPosition errorRecovery) <* discard
   where 
     discard = many (escapeChars <|> whiteSpace)
+
+errorRecovery :: Parser TokenType
+errorRecovery = Parser $ \input (col, row) -> 
+  case runParser tokenP input (col, row) of 
+    Right res -> Right res
+    Left errs -> case input of
+      [] -> Left errs
+      (x:xs) -> Right (xs, (UNEXPECTED x, (col, row)))
+  where
     tokenP =  comment
          <|> stringLiteral 
          <|> doubleCharToken 
@@ -107,6 +116,7 @@ tokens = many (discard *> wrapPosition tokenP) <* discard
          <|> keywords 
          <|> identifier
          <|> newLine
+
 
 wrapPosition :: Parser TokenType -> Parser TokenInfo
 wrapPosition p = Parser $ \inp (col, row) -> 

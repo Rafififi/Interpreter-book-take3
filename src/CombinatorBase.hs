@@ -15,7 +15,7 @@ data ErrorType inp err
   | ExpectedEof inp
   | Empty
   | ExpectedString [inp] [inp]
-  deriving (Eq)
+  deriving (Eq, Ord)
 
 newtype GenParser inp err out = Parser
   { runParser :: [inp] -> (Int, Int) -> Either [Error inp err] ([inp], (out, (Int, Int)))
@@ -79,7 +79,7 @@ instance (Show inp, Show err) => Show (ErrorType inp err) where
   show EndOfInput = "no more input" 
   show (Expected x y) = "Expected " <> show x <> " got " <> show y 
   show (ExpectedString x y) = "Expected " <> show x <> " got " <> show y
-  show (Unexpected x) = "Expected " <> show x 
+  show (Unexpected x) = "Got Unexpected: " <> show x 
   show (CustomError x) = show x 
   show (ExpectedEof x) = "Expected EOF got " <> show x 
   show Empty = "AHHH" 
