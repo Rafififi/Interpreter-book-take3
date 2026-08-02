@@ -1,2 +1,22 @@
-1+1      //2
-1 2
+fn t1(n) {
+  print n;
+}
+fn t2() {
+  print 2;
+}
+
+fn count(n) {
+  if (n == 1) {
+    return t1;
+  }
+  if (n == 2) {
+      return t2;
+  }
+  fn t3() {
+      print 3;
+  }
+  return t3;
+}
+
+var x = count(1);
+x(5);

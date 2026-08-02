@@ -29,8 +29,8 @@ double = NUMBER <$> (((+) . (fromIntegral :: Int -> Double)
       <*> (read . ('0' :) <$> ((:) <$> char '.' <*> digits) <|> pure 0))
   where digits = consumeSome isDigit
 
-comment :: Parser TokenType
-comment =  COMMENT <$> (string "//" *> (consumeSome  (/='\n') <|> pure ""))
+comment :: Parser String
+comment =  (string "//" *> (consumeSome  (/='\n') <|> pure ""))
 
 identifier :: Parser TokenType
 identifier =  IDENTIFIER <$> consumeSome  (\x -> isAlphaNum x || x == '_')
@@ -79,17 +79,21 @@ keywords =  (AND     <$ string "and" <* notFollowedByIdentifier)
         <|> (BOOLEAN True <$ string "true" <* notFollowedByIdentifier)
 
 notFollowedByIdentifier :: Parser Char
-notFollowedByIdentifier = satisfy (\x -> not (isAlphaNum x) && x /= '_' && x /= '-')
+notFollowedByIdentifier = Parser $ \input (col, row) ->
+  case input of
+    [] -> Right ([], ('\0', (col, row)))
+    (x:_) | not (isAlphaNum x) && x /= '_' -> Right (input, (x, (col, row)))
+    (x:_) -> Left [Error col row (Unexpected x)]
 
 escapeChars :: Parser String
 escapeChars =  string "\t"
            <|> string "\r"
 
-newLine :: Parser TokenType
+newLine :: Parser String
 newLine = Parser $ \input (col, row) -> 
   case input of 
     [] -> Left [Error col row Empty]
-    (x:xs) | x == '\n' -> Right (xs, (STRING "", (0, row+1)))
+    (x:xs) | x == '\n' -> Right (xs, ("", (0, row+1)))
            | otherwise -> Left [Error col row $ Expected '\n' x]
 
 whiteSpace :: Parser String
@@ -98,7 +102,7 @@ whiteSpace =  consumeSome (==' ')
 tokens :: Parser [TokenInfo]
 tokens = many (discard *> wrapPosition errorRecovery) <* discard
   where 
-    discard = many (escapeChars <|> whiteSpace)
+    discard = many (escapeChars <|> whiteSpace <|> newLine <|> comment)
 
 errorRecovery :: Parser TokenType
 errorRecovery = Parser $ \input (col, row) -> 
@@ -108,14 +112,12 @@ errorRecovery = Parser $ \input (col, row) ->
       [] -> Left errs
       (x:xs) -> Right (xs, (UNEXPECTED x, (col, row)))
   where
-    tokenP =  comment
-         <|> stringLiteral 
+    tokenP = stringLiteral 
          <|> doubleCharToken 
          <|> singleCharToken
          <|> double
          <|> keywords 
          <|> identifier
-         <|> newLine
 
 
 wrapPosition :: Parser TokenType -> Parser TokenInfo

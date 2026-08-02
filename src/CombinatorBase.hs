@@ -56,6 +56,7 @@ token err pred = Parser $ \input (col, row) ->
     (x : xs) | pred x -> Right (xs, (x, (col + 1, row)))
              | otherwise -> Left [Error col row $ err x]
 
+
 satisfy :: (inp -> Bool) -> GenParser inp err inp
 satisfy = token Unexpected 
 
@@ -71,8 +72,8 @@ string expected = Parser $ \input (col, row) ->
     Right res -> Right res
     Left _    -> Left [Error col row (ExpectedString expected (take (length expected)input))]
 
-sepBy :: (Alternative f) => f a -> f sep -> f [a]
-sepBy p sep = (:) <$> (many sep *> p) <*> many (some sep *> p) <|> pure []
+sepBy :: (Alternative f) => f a -> f b -> f [b]
+sepBy sep element = (:) <$> element <*> many (sep *> element) <|> pure []
 
 
 instance (Show inp, Show err) => Show (ErrorType inp err) where

@@ -65,7 +65,9 @@ executable Interpreter-book-take3
     other-modules:  Token,
                     CombinatorBase,
                     Scanner,
-                    Parser
+                    Parser,
+                    AST,
+                    Interpreter
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

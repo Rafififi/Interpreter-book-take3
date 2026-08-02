@@ -1,4 +1,6 @@
-module Token(TokenType(..), TokenInfo(..), printTokens) where
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
+
+module Token(TokenType(..), TokenInfo(..), printTokens, showLocation) where
 
 data TokenType = 
     LEFTPAREN
@@ -91,8 +93,21 @@ data TokenInfo = TokenInfo
   { col :: Int
   , row :: Int
   , token :: TokenType
-  } deriving (Show, Eq)
+  }
+
+instance Eq TokenInfo where
+  (TokenInfo _ _ token) == (TokenInfo _ _ token') =  token == token'
+
+instance Ord TokenInfo where
+  compare (TokenInfo _ _ token) (TokenInfo _ _ token') = compare token token'
+
+instance Show TokenInfo where
+  show (TokenInfo _ _ token) = show token
+  
+showLocation :: TokenInfo -> String
+showLocation (TokenInfo r c _) = show r <> " " <> show c
+
 
 printTokens :: Bool -> TokenInfo -> IO Bool
 printTokens _ (TokenInfo row col (UNEXPECTED x)) = print ("found unexpected token " <> show x <> " line " <> show row <> " col: " <> show col) >> return True
-printTokens res token = print token  >> return res
+printTokens res t = print t >> return res
